@@ -1,0 +1,43 @@
+{
+  "version": 10,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 31
+  },
+  "configurePresets": [
+    {
+      "name": "x64-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      }
+    },
+    {
+      "name": "x64-linux",
+      "hidden": true,
+      "inherits": "x64-base",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "x64-linux-dev",
+      "hidden": false,
+      "inherits": "x64-linux",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      },
+      "environment": {
+        "CMAKE_LINKER_TYPE": "LLD",
+        "CXXFLAGS": "-stdlib=libc++"
+      }
+    }
+  ]
+}

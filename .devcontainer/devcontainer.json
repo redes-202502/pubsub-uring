@@ -1,0 +1,38 @@
+{
+  "name": "pubsub-uring",
+  "build": {
+    "dockerfile": "./Dockerfile",
+    "context": "."
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.renderWhitespace": "boundary",
+        "editor.wordWrap": "off",
+        "editor.minimap.enabled": false,
+        "editor.fontLigatures": false,
+        "editor.renderLineHighlight": "all",
+        "editor.bracketPairColorization.enabled": true,
+        "editor.rulers": [80],
+        "workbench.sideBar.location": "right",
+        "workbench.activityBar.location": "top",
+        "workbench.colorTheme": "Dracula Theme",
+        "workbench.startupEditor": "none",
+        "telemetry.telemetryLevel": "off",
+        "[json]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[jsonc]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        }
+      },
+      "extensions": [
+        "dracula-theme.theme-dracula",
+        "esbenp.prettier-vscode",
+        "davidanson.vscode-markdownlint",
+        "llvm-vs-code-extensions.vscode-clangd",
+        "ms-vscode.cmake-tools"
+      ]
+    }
+  }
+}

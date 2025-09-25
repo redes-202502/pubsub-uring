@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.31)
+set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "0e5b6991-d74f-4b3d-a41c-cf096e0b2508") # @_@
+project(pubsub-uring LANGUAGES CXX)
+
+set(CMAKE_CXX_MODULE_STD ON)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_COLOR_DIAGNOSTICS ON)
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
+find_package(liburing REQUIRED)
+
+add_subdirectory(lib)
+
+add_executable(pubsub-uring-sandbox)
+target_sources(pubsub-uring-sandbox
+  PRIVATE
+  main.cpp
+)
+target_link_libraries(pubsub-uring-sandbox
+  PRIVATE pubsub-uring
+)
