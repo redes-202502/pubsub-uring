@@ -16,12 +16,4 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 find_package(liburing REQUIRED)
 
 add_subdirectory(lib)
-
-add_executable(pubsub-uring-sandbox)
-target_sources(pubsub-uring-sandbox
-  PRIVATE
-  main.cpp
-)
-target_link_libraries(pubsub-uring-sandbox
-  PRIVATE pubsub-uring
-)
+add_subdirectory(src)
