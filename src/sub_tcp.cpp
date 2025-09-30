@@ -8,21 +8,22 @@ import std;
 #include <cstdlib>
 
 #include <arpa/inet.h>
-#include <fcntl.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
 using namespace std;
 namespace po = boost::program_options;
 
+using socket_t = int;
+
 namespace {
 constexpr string_view EXIT_MESSAGE = "[[EXIT]]\n";
 
-volatile sig_atomic_t stopRequested = 0;
+volatile sig_atomic_t STOP_REQUESTED = 0;
 
 void handleSignal(int signum) {
   if (signum == SIGINT) {
-    stopRequested = 1;
+    STOP_REQUESTED = 1;
   }
 }
 } // namespace
@@ -30,13 +31,16 @@ void handleSignal(int signum) {
 int main(int argc, char *argv[]) {
   string host;
   uint16_t port;
+  uint8_t channels;
   bool help;
 
   po::options_description desc("Subscriber options");
   desc.add_options()("help,h", po::bool_switch(&help), "Show help message")(
       "host", po::value<string>(&host)->default_value("127.0.0.1"),
       "Broker host address")(
-      "port,p", po::value<uint16_t>(&port)->default_value(5000), "Broker port");
+      "port,p", po::value<uint16_t>(&port)->default_value(5000), "Broker port")(
+      "channels,c", po::value<uint8_t>(&channels)->default_value(0),
+      "Channels to subscribe to (comma-separated, or 'ALL' for all channels)");
 
   po::variables_map vm;
   try {
@@ -52,31 +56,24 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  print(R"( ▄▄▄ █  ▐▌▗▖     ▄▄▄▄  ▄▄▄ ▄ ▄▄▄▄
-█     ▀▄▄▞▘▐▌     █   █ █    ▄ █   █
-▀▀▀▙       ▐▛▀▚▖  █▄▄▄▀ █    █ █   █
-▄▄▄▛       ▐▙▄▞▘  █          █     ▗▄▖
-                  ▀               ▐▌ ▐▌
+  print(R"( ▄▄▄ █  ▐▌▗▖       █  ▐▌ ▄▄▄ ▄ ▄▄▄▄    
+▀▄▄  ▀▄▄▞▘▐▌       ▀▄▄▞▘█    ▄ █   █   
+▄▄▄▀      ▐▛▀▚▖         █    █ █   █   
+          ▐▙▄▞▘              █     ▗▄▖ 
+                                  ▐▌ ▐▌
                                    ▝▀▜▌
                                   ▐▙▄▞▘)");
 
   println("\n\n--    Press ctrl+c to exit...    --");
   println("Connecting to broker at {}:{}", host, port);
+  println("Subscribing to channels: {}", channels);
 
   signal(SIGINT, handleSignal);
 
-  auto sock = ::socket(AF_INET, SOCK_STREAM, 0);
+  socket_t sock = ::socket(AF_INET, SOCK_STREAM, 0);
   if (sock < 0) {
     println(stderr, "\033[31mSocket creation failed: {}\033[0m",
             strerror(errno));
-    return EXIT_FAILURE;
-  }
-
-  const auto flags = ::fcntl(sock, F_GETFL, 0);
-  if (flags < 0 || ::fcntl(sock, F_SETFL, flags | O_NONBLOCK) < 0) {
-    println(stderr, "\033[31mFailed to set socket non-blocking: {}\033[0m",
-            strerror(errno));
-    ::close(sock);
     return EXIT_FAILURE;
   }
 
@@ -89,82 +86,94 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (::bind(sock, (sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
-    println(stderr, "\033[31mBind failed: {}\033[0m", strerror(errno));
+  if (::connect(sock, (sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
+    println(stderr, "\033[31mConnection failed: {}\033[0m", strerror(errno));
     ::close(sock);
     return 1;
   }
 
-  if (::listen(sock, SOMAXCONN) < 0) {
-    println(stderr, "\033[31mListen failed: {}\033[0m", strerror(errno));
+  println("\033[32mConnected to broker at {}:{}\033[0m", host, port);
+
+  const auto handshake =
+      channels == 0 ? string("[[SUB:ALL]]") : format("[[SUB:{}]]", channels);
+  const auto handshakeSent =
+      ::send(sock, handshake.data(), handshake.size(), 0);
+  if (handshakeSent < 0) {
+    println(stderr, "\033[31mFailed to send handshake: {}\033[0m",
+            strerror(errno));
     ::close(sock);
     return 1;
   }
-
-  println("\033[32mSubscriber listening on {}:{}\033[0m", host, port);
-
+  println("\033[32mHandshake sent: {}\033[0m", handshake);
   println("Listening for messages...\n");
 
-  array<char, 1024> buffer;
+  array<char, 128> buffer;
+  array<char, 512> recvBuffer;
+  size_t recvBufferLen = 0;
 
-  while (!stopRequested) {
-    sockaddr_in clientAddr{};
-    socklen_t clientLen = sizeof(clientAddr);
+  while (!STOP_REQUESTED) {
+    auto received = ::recv(sock, buffer.data(), buffer.size(), 0);
 
-    auto clientSock = ::accept(sock, (sockaddr *)&clientAddr, &clientLen);
-    if (clientSock < 0) {
-      if (errno == EWOULDBLOCK || errno == EAGAIN) {
-        // No incoming connections, sleep briefly and continue
-        this_thread::sleep_for(chrono::milliseconds(100));
-        continue;
-      }
+    if (received < 0) {
       if (errno == EINTR) {
-        if (stopRequested) {
+        if (STOP_REQUESTED) {
           break;
         }
         continue;
       }
-      println(stderr, "\033[31mAccept failed: {}\033[0m", strerror(errno));
+      println(stderr, "\033[31mReceive failed: {}\033[0m", strerror(errno));
+      break;
+    } else if (received == 0) {
+      println("\033[33mConnection closed by broker\033[0m");
       break;
     }
 
-    char clientIP[INET_ADDRSTRLEN];
-    ::inet_ntop(AF_INET, &clientAddr.sin_addr, clientIP, INET_ADDRSTRLEN);
-    println("\033[32mAccepted connection from {}:{}\033[0m", clientIP,
-            ::ntohs(clientAddr.sin_port));
+    // Append to buffer and process complete messages (lines)
+    if (recvBufferLen + received > recvBuffer.size()) {
+      println(stderr, "\033[31mReceive buffer overflow\033[0m");
+      break;
+    }
+    memcpy(recvBuffer.data() + recvBufferLen, buffer.data(), received);
+    recvBufferLen += received;
 
-    // Keep receiving messages from this client until EXIT or disconnect
-    bool clientDisconnected = false;
-    while (!stopRequested && !clientDisconnected) {
-      auto received = ::recv(clientSock, buffer.data(), buffer.size() - 1, 0);
-      if (received < 0) {
-        if (errno == EINTR) {
-          if (stopRequested) {
-            break;
-          }
-          continue;
-        }
-        println(stderr, "\033[31mReceive failed: {}\033[0m", strerror(errno));
-        clientDisconnected = true;
-      } else if (received == 0) {
-        println("\033[33mConnection closed by client\033[0m");
-        clientDisconnected = true;
-      } else {
-        buffer[received] = '\0';
+    while (true) {
+      // Find newline in the buffer
+      char *newline =
+          static_cast<char *>(memchr(recvBuffer.data(), '\n', recvBufferLen));
+      if (!newline) {
+        break; // No complete message yet
+      }
 
-        // Check for EXIT message
-        if (string_view(buffer.data(), received) == EXIT_MESSAGE) {
-          println("\033[32mReceived EXIT message - client disconnected "
-                  "gracefully\033[0m");
-          clientDisconnected = true;
-        } else {
-          println("\033[36mReceived [{} bytes]: {}\033[0m", received,
-                  buffer.data());
-        }
+      size_t msgLen = newline - recvBuffer.data() + 1;
+      string_view message(recvBuffer.data(), msgLen);
+
+      // Check for EXIT message
+      if (message.starts_with(EXIT_MESSAGE)) {
+        println("\033[32mReceived EXIT message from broker\033[0m");
+        STOP_REQUESTED = 1;
+        break;
+      }
+
+      // Display received message
+      println("\033[36mReceived: {}\033[0m",
+              string_view(message.data(),
+                          message.size() - 1)); // Strip newline for display
+
+      // Remove processed message by shifting remaining data
+      recvBufferLen -= msgLen;
+      if (recvBufferLen > 0) {
+        memmove(recvBuffer.data(), recvBuffer.data() + msgLen, recvBufferLen);
       }
     }
+  }
 
-    ::close(clientSock);
+  println("\n\033[33mSending EXIT message...\033[0m");
+  ssize_t exitSent = ::send(sock, EXIT_MESSAGE.data(), EXIT_MESSAGE.size(), 0);
+  if (exitSent < 0) {
+    println(stderr, "\033[31mFailed to send EXIT message: {}\033[0m",
+            strerror(errno));
+  } else {
+    println("\033[32mEXIT message sent\033[0m");
   }
 
   ::close(sock);

@@ -24,3 +24,8 @@ target_sources(broker_tcp
   PRIVATE
   broker_tcp.cpp
 )
+target_link_libraries(broker_tcp
+  PRIVATE
+  Boost::program_options
+  liburing::liburing
+)
