@@ -29,3 +29,34 @@ target_link_libraries(broker_tcp
   Boost::program_options
   liburing::liburing
 )
+
+add_executable(pub_udp)
+target_sources(pub_udp
+  PRIVATE
+  pub_udp.cpp
+)
+target_link_libraries(pub_udp
+  PRIVATE
+  misc
+  Boost::program_options
+)
+
+add_executable(sub_udp)
+target_sources(sub_udp
+  PRIVATE
+  sub_udp.cpp
+)
+target_link_libraries(sub_udp
+  PRIVATE
+  Boost::program_options
+)
+
+add_executable(broker_udp)
+target_sources(broker_udp
+  PRIVATE
+  broker_udp.cpp
+)
+target_link_libraries(broker_udp
+  PRIVATE
+  Boost::program_options
+)
