@@ -15,5 +15,14 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 find_package(liburing REQUIRED)
 
+include(FetchContent)
+set(BOOST_INCLUDE_LIBRARIES program_options)
+FetchContent_Declare(
+  boost
+  URL https://github.com/boostorg/boost/releases/download/boost-1.89.0/boost-1.89.0-cmake.tar.gz
+)
+
+FetchContent_MakeAvailable(boost)
+
 add_subdirectory(lib)
 add_subdirectory(src)

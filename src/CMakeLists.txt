@@ -1,20 +1,26 @@
-add_executable(pub)
-target_sources(pub
+add_executable(pub_tcp)
+target_sources(pub_tcp
   PRIVATE
-  pub.cpp
+  pub_tcp.cpp
 )
-target_link_libraries(pub
-  PRIVATE misc
-)
-
-add_executable(sub)
-target_sources(sub
+target_link_libraries(pub_tcp
   PRIVATE
-  sub.cpp
+  misc
+  Boost::program_options
 )
 
-add_executable(broker)
-target_sources(broker
+add_executable(sub_tcp)
+target_sources(sub_tcp
   PRIVATE
-  broker.cpp
+  sub_tcp.cpp
+)
+target_link_libraries(sub_tcp
+  PRIVATE
+  Boost::program_options
+)
+
+add_executable(broker_tcp)
+target_sources(broker_tcp
+  PRIVATE
+  broker_tcp.cpp
 )
