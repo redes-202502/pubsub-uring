@@ -6,8 +6,7 @@ import std;
 
 using namespace std;
 
-export namespace herald {
-
+export namespace herald::proto {
 enum class OpCode : uint8_t {
   // Connection lifecycle
   HANDSHAKE_PUB = 0x01,
@@ -274,5 +273,4 @@ public:
         .needMoreData = false, .bytesConsumed = totalSize, .message = message};
   }
 };
-
-} // namespace herald
+} // namespace herald::proto
