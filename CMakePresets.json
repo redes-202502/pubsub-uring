@@ -31,7 +31,6 @@
       "hidden": false,
       "inherits": "x64-linux",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       },
