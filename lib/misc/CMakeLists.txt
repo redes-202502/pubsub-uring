@@ -1,2 +1,0 @@
-add_library(misc)
-add_subdirectory(MessageGenerator)

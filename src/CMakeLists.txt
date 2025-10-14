@@ -1,62 +1,34 @@
-add_executable(pub_tcp)
-target_sources(pub_tcp
+add_executable(tcp-publisher)
+target_sources(tcp-publisher
   PRIVATE
-  pub_tcp.cpp
-)
-target_link_libraries(pub_tcp
-  PRIVATE
-  misc
-  Boost::program_options
+  TcpPublisher.cpp
+  MessageGenerator.cpp
 )
 
-add_executable(sub_tcp)
-target_sources(sub_tcp
+add_executable(udp-publisher)
+target_sources(udp-publisher
   PRIVATE
-  sub_tcp.cpp
-)
-target_link_libraries(sub_tcp
-  PRIVATE
-  Boost::program_options
+  UdpPublisher.cpp
+  MessageGenerator.cpp
 )
 
-add_executable(broker_tcp)
-target_sources(broker_tcp
+add_executable(tcp-broker)
+target_sources(tcp-broker
   PRIVATE
-  broker_tcp.cpp
+  TcpBroker.cpp
 )
-target_link_libraries(broker_tcp
+target_link_libraries(tcp-broker
   PRIVATE
-  Boost::program_options
   liburing::liburing
 )
 
-add_executable(pub_udp)
-target_sources(pub_udp
-  PRIVATE
-  pub_udp.cpp
-)
-target_link_libraries(pub_udp
-  PRIVATE
-  misc
-  Boost::program_options
-)
 
-add_executable(sub_udp)
-target_sources(sub_udp
+add_executable(udp-broker)
+target_sources(udp-broker
   PRIVATE
-  sub_udp.cpp
+  UdpBroker.cpp
 )
-target_link_libraries(sub_udp
+target_link_libraries(udp-broker
   PRIVATE
-  Boost::program_options
-)
-
-add_executable(broker_udp)
-target_sources(broker_udp
-  PRIVATE
-  broker_udp.cpp
-)
-target_link_libraries(broker_udp
-  PRIVATE
-  Boost::program_options
+  liburing::liburing
 )

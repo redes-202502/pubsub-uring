@@ -12,8 +12,7 @@
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "installDir": "${sourceDir}/out/install/${presetName}",
       "architecture": {
-        "value": "x64",
-        "strategy": "external"
+        "value": "x64"
       }
     },
     {
@@ -31,7 +30,6 @@
       "hidden": false,
       "inherits": "x64-linux",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       },

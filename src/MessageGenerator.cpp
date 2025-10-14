@@ -1,18 +1,23 @@
-module MessageGenerator;
+#include <array>
+#include <charconv>
+#include <cstring>
+#include <format>
+#include <string_view>
+#include <vector>
 
-import std;
+#include "MessageGenerator.hpp"
 
 using namespace std;
 
 namespace misc {
 
-constexpr array teams{
+constexpr auto teams = to_array<string_view>({
 #include "teams.txt"
-};
+});
 
-constexpr array players{
+constexpr auto players = to_array<string_view>({
 #include "players.txt"
-};
+});
 
 uint32_t MessageGenerator::initSeed() {
   if (const char *env = getenv("MsgGen_SEED")) {
