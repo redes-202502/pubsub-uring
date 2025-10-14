@@ -4,6 +4,7 @@
     "dockerfile": "./Dockerfile",
     "context": "."
   },
+  "forwardPorts": [4040],
   "runArgs": [
     "--cap-add=NET_ADMIN",
     "--cap-add=NET_RAW",
@@ -39,5 +40,6 @@
         "ms-vscode.cmake-tools"
       ]
     }
-  }
+  },
+  "postStartCommand": "nohup bash -c '/pyroscope/pyroscope &'"
 }
