@@ -2,7 +2,25 @@
 #include <print>
 #include <string>
 
+#include <csignal>
+
+#include <liburing.h>
+
 using namespace std;
+
+using socket_t = int;
+
+class TcpBroker {
+public:
+  TcpBroker(bool verbose) : verbose{verbose} {}
+
+  static inline volatile sig_atomic_t STOP_REQUESTED = 0;
+
+  io_uring Ring;
+
+private:
+  bool verbose;
+};
 
 namespace {
 struct Options {
@@ -96,6 +114,8 @@ int main(int argc, char **argv) {
   println("Host: {}", opts.host);
   println("Port: {}", opts.port);
   println("Verbose: {}", opts.verbose);
+
+  println("\n\n--    Press ctrl+c to exit...    --");
 
   return 0;
 }
