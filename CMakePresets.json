@@ -4,11 +4,12 @@
     "major": 3,
     "minor": 31
   },
+  "$schema": "https://cmake.org/cmake/help/latest/_downloads/3e2d73bff478d88a7de0de736ba5e361/schema.json",
   "configurePresets": [
     {
       "name": "x64-base",
       "hidden": true,
-      "generator": "Ninja",
+      "generator": "Ninja Multi-Config",
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "installDir": "${sourceDir}/out/install/${presetName}",
       "architecture": {
@@ -30,13 +31,19 @@
       "hidden": false,
       "inherits": "x64-linux",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+        "CMAKE_CXX_COMPILER": "clang++"
       },
       "environment": {
         "CMAKE_LINKER_TYPE": "LLD",
         "CXXFLAGS": "-stdlib=libc++"
       }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "x64-linux-dev-build",
+      "configurePreset": "x64-linux-dev",
+      "configuration": "RelWithDebInfo"
     }
   ]
 }
