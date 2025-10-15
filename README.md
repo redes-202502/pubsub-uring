@@ -8,6 +8,8 @@ Use:
 tshark -i eth0 -w capture.pcapng
 ```
 
+When doing it locally, select the `loopback` interface
+
 ## Misc
 
 ASCII font used for banner: DiamFont
