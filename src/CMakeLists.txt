@@ -1,12 +1,18 @@
+add_library(proto)
+target_sources(proto
+  PRIVATE
+  Proto.cpp
+)
+
 add_executable(tcp-publisher)
 target_sources(tcp-publisher
   PRIVATE
   TcpPublisher.cpp
   MessageGenerator.cpp
-  Proto.cpp
 )
 target_link_libraries(tcp-publisher
   PRIVATE
+  proto
   liburing::liburing
 )
 
@@ -15,10 +21,10 @@ target_sources(udp-publisher
   PRIVATE
   UdpPublisher.cpp
   MessageGenerator.cpp
-  Proto.cpp
 )
 target_link_libraries(udp-publisher
   PRIVATE
+  proto
   liburing::liburing
 )
 
@@ -26,10 +32,10 @@ add_executable(tcp-subscriber)
 target_sources(tcp-subscriber
   PRIVATE
   TcpSubscriber.cpp
-  Proto.cpp
 )
 target_link_libraries(tcp-subscriber
   PRIVATE
+  proto
   liburing::liburing
 )
 
@@ -37,10 +43,10 @@ add_executable(tcp-broker)
 target_sources(tcp-broker
   PRIVATE
   TcpBroker.cpp
-  Proto.cpp
 )
 target_link_libraries(tcp-broker
   PRIVATE
+  proto
   liburing::liburing
 )
 
@@ -48,10 +54,10 @@ add_executable(udp-broker)
 target_sources(udp-broker
   PRIVATE
   UdpBroker.cpp
-  Proto.cpp
 )
 target_link_libraries(udp-broker
   PRIVATE
+  proto
   liburing::liburing
 )
 
@@ -59,9 +65,9 @@ add_executable(udp-subscriber)
 target_sources(udp-subscriber
   PRIVATE
   UdpSubscriber.cpp
-  Proto.cpp
 )
 target_link_libraries(udp-subscriber
   PRIVATE
+  proto
   liburing::liburing
 )
